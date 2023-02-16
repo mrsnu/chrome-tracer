@@ -1,3 +1,7 @@
+package(
+    licenses = ["notice"],  # Apache 2.0
+)
+
 cc_library(
     name = "chrome_tracer",
     hdrs = [
@@ -9,7 +13,8 @@ cc_library(
     ],
     deps = [
         "@jsoncpp//:jsoncpp",
-    ]
+    ],
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
