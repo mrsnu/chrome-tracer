@@ -1,0 +1,6 @@
+bazel-bin
+bazel-chrome_tracer
+bazel-out
+bazel-testlogs
+
+.vscode
