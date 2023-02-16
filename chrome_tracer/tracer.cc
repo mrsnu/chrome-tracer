@@ -20,7 +20,10 @@ void ChromeTracer::AddStream(std::string stream) {
     std::cerr << "The given stream already exists." << std::endl;
     abort();
   }
-  event_table_.insert({stream, std::map<std::string, Event>()});
+  if (!event_table_.emplace(stream, std::map<std::string, Event>()).second) {
+    std::cerr << "Failed to add a stream.";
+    abort();
+  }
 }
 
 bool ChromeTracer::HasEvent(std::string stream, std::string event) {
@@ -28,7 +31,7 @@ bool ChromeTracer::HasEvent(std::string stream, std::string event) {
     std::cerr << "The given stream does not exists." << std::endl;
     abort();
   }
-  auto events = event_table_[stream];
+  auto& events = event_table_[stream];
   if (events.find(event) == events.end()) {
     return false;
   }
@@ -40,9 +43,10 @@ void ChromeTracer::StartEvent(std::string stream, std::string event) {
     std::cerr << "The given event already exists." << std::endl;
     abort();
   }
-  auto events = event_table_[stream];
+  auto& events = event_table_[stream];
   if (!events.emplace(event, Event(event)).second) {
-    std::cerr << "Failed to add an event." << std::endl;
+    std::cerr << "Failed to start an event." << std::endl;
+    abort();
   }
 }
 
@@ -51,13 +55,19 @@ void ChromeTracer::EndEvent(std::string stream, std::string event) {
     std::cerr << "The given event does not exists." << std::endl;
     abort();
   }
-  event_table_[stream];
+  auto events = event_table_.find(stream)->second;
+  auto new_event = events.find(event)->second;
+  new_event.Finish();
+  events.erase(event);
+  events.emplace(event, new_event);
+  event_table_[stream] = events;
 }
 
 bool ChromeTracer::Validate() const {
   for (auto const& stream : event_table_) {
     for (auto const& events : stream.second) {
       if (events.second.GetStatus() != Event::EventStatus::Finished) {
+        std::cerr << stream.first << " " << events.second.name;
         return false;
       }
     }
@@ -71,6 +81,8 @@ std::string ChromeTracer::Dump() const {
     std::cerr << "There is unfinished event." << std::endl;
     abort();
   }
+
+  return "Test String";
 }
 
 // Dump the json string to the file path.

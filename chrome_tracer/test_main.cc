@@ -24,18 +24,25 @@ int main() {
   tracer.AddStream(kRenderingPipeline);
   
   tracer.StartEvent(kAnalysisPipeline, kEventAnalysis1);
-  tracer.StartEvent(kAnalysisPipeline, kEventAnalysis2);
+  tracer.StartEvent(kRenderingPipeline, kEventAnalysis2);
   tracer.StartEvent(kAnalysisPipeline, kEventAnalysis3);
-  tracer.StartEvent(kAnalysisPipeline, kEventAnalysis4);
+  tracer.StartEvent(kRenderingPipeline, kEventAnalysis4);
   tracer.StartEvent(kAnalysisPipeline, kEventAnalysis5);
 
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis1);
-  tracer.EndEvent(kAnalysisPipeline, kEventAnalysis2);
+  tracer.EndEvent(kRenderingPipeline, kEventAnalysis2);
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis3);
-  tracer.EndEvent(kAnalysisPipeline, kEventAnalysis4);
+  tracer.EndEvent(kRenderingPipeline, kEventAnalysis4);
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis5);
 
-  printf("Hello, world!\n");
+  if (tracer.Validate()) {
+    printf("Validated!\n");
+  } else {
+    printf("Invalid!\n");
+  }
+
+  std::cout << tracer.Dump();
+  tracer.Dump("test.json");
 
   return 0;
 }
