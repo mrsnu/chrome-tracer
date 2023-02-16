@@ -23,16 +23,15 @@ int main() {
   tracer.AddStream(kAnalysisPipeline);
   tracer.AddStream(kRenderingPipeline);
   
-  tracer.StartEvent(kAnalysisPipeline, kEventAnalysis1);
-  tracer.StartEvent(kRenderingPipeline, kEventAnalysis2);
-  tracer.StartEvent(kAnalysisPipeline, kEventAnalysis3);
-  tracer.StartEvent(kRenderingPipeline, kEventAnalysis4);
-  tracer.StartEvent(kAnalysisPipeline, kEventAnalysis5);
-
+  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis1);
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis1);
+  tracer.BeginEvent(kRenderingPipeline, kEventAnalysis2);
   tracer.EndEvent(kRenderingPipeline, kEventAnalysis2);
+  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis3);
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis3);
+  tracer.BeginEvent(kRenderingPipeline, kEventAnalysis4);
   tracer.EndEvent(kRenderingPipeline, kEventAnalysis4);
+  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis5);
   tracer.EndEvent(kAnalysisPipeline, kEventAnalysis5);
 
   if (tracer.Validate()) {

@@ -4,3 +4,5 @@ bazel-out
 bazel-testlogs
 
 .vscode
+
+test.json
