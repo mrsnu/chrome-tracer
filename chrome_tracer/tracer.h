@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <chrono>
+#include <mutex>
 
 #include "chrome_tracer/event.h"
 
@@ -32,6 +33,8 @@ class ChromeTracer {
   std::string name_;
   std::map<std::string, std::map<std::string, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;
+
+  mutable std::mutex lock_;
 };
 
 }  // namespace chrome_tracer

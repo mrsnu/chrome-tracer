@@ -80,6 +80,7 @@ ChromeTracer::ChromeTracer(std::string name) {
 }
 
 bool ChromeTracer::HasStream(std::string stream) {
+  std::lock_guard<std::mutex> lock(lock_);
   if (event_table_.find(stream) == event_table_.end()) {
     return false;
   }
@@ -90,6 +91,8 @@ void ChromeTracer::AddStream(std::string stream) {
     std::cerr << "The given stream already exists." << std::endl;
     abort();
   }
+
+  std::lock_guard<std::mutex> lock(lock_);
   if (!event_table_.emplace(stream, std::map<std::string, Event>()).second) {
     std::cerr << "Failed to add a stream.";
     abort();
@@ -101,6 +104,8 @@ bool ChromeTracer::HasEvent(std::string stream, std::string event) {
     std::cerr << "The given stream does not exists." << std::endl;
     abort();
   }
+
+  std::lock_guard<std::mutex> lock(lock_);
   auto& events = event_table_[stream];
   if (events.find(event) == events.end()) {
     return false;
@@ -113,6 +118,8 @@ void ChromeTracer::BeginEvent(std::string stream, std::string event) {
     std::cerr << "The given event already exists." << std::endl;
     abort();
   }
+
+  std::lock_guard<std::mutex> lock(lock_);
   auto& events = event_table_[stream];
   if (!events.emplace(event, Event(event)).second) {
     std::cerr << "Failed to start an event." << std::endl;
@@ -125,6 +132,8 @@ void ChromeTracer::EndEvent(std::string stream, std::string event) {
     std::cerr << "The given event does not exists." << std::endl;
     abort();
   }
+
+  std::lock_guard<std::mutex> lock(lock_);
   auto events = event_table_.find(stream)->second;
   auto new_event = events.find(event)->second;
   new_event.Finish();
@@ -134,6 +143,7 @@ void ChromeTracer::EndEvent(std::string stream, std::string event) {
 }
 
 bool ChromeTracer::Validate() const {
+  std::lock_guard<std::mutex> lock(lock_);
   for (auto const& stream : event_table_) {
     for (auto const& events : stream.second) {
       if (events.second.GetStatus() != Event::EventStatus::Finished) {
@@ -151,6 +161,8 @@ std::string ChromeTracer::Dump() const {
     std::cerr << "There is unfinished event." << std::endl;
     abort();
   }
+
+  std::lock_guard<std::mutex> lock(lock_);
 
   std::map<std::string, int> stream_pid_map;
   int i = 1;
@@ -211,7 +223,7 @@ void ChromeTracer::Dump(std::string path) const {
 }
 
 std::string ChromeTracer::Summary() const {
-  
+  return "";
 }
 
 }  // namespace chrome_tracer

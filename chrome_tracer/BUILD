@@ -26,3 +26,13 @@ cc_binary(
         ":chrome_tracer",
     ],
 )
+
+cc_binary(
+    name = "test_thread_main",
+    srcs = [
+        "test_thread_main.cc",
+    ],
+    deps = [
+        ":chrome_tracer",
+    ],
+)

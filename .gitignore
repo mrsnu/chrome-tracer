@@ -1,5 +1,6 @@
 bazel-bin
 bazel-chrome_tracer
+bazel-chrome-tracer
 bazel-out
 bazel-testlogs
 
