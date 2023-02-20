@@ -33,7 +33,7 @@ cc_library(
         "tracer.cc",
     ],
     deps = [
-        "@jsoncpp//:jsoncpp",
+        "//chrome_tracer/jsoncpp:jsoncpp",
     ],
     visibility = ["//visibility:public"],
 )
