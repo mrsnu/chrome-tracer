@@ -226,4 +226,9 @@ std::string ChromeTracer::Summary() const {
   return "";
 }
 
+void ChromeTracer::Clear() {
+  event_table_.clear();
+  anchor_ = std::chrono::system_clock::now();
+}
+
 }  // namespace chrome_tracer

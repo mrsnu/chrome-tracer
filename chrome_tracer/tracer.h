@@ -29,6 +29,8 @@ class ChromeTracer {
   void Dump(std::string path) const;
   std::string Summary() const;
 
+  void Clear();
+
  private:
   std::string name_;
   std::map<std::string, std::map<std::string, Event>> event_table_;
