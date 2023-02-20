@@ -227,7 +227,9 @@ std::string ChromeTracer::Summary() const {
 }
 
 void ChromeTracer::Clear() {
-  event_table_.clear();
+  for (auto& stream : event_table_) {
+    stream.second.clear();
+  }
   anchor_ = std::chrono::system_clock::now();
 }
 
