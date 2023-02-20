@@ -8,59 +8,63 @@ namespace chrome_tracer {
 
 namespace {
 
-Json::Value GenerateInstantEvent(
+std::string GenerateInstantEvent(
     std::string name,
     int pid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
-  Json::Value result;
-  result["name"] = name;
-  result["ph"] = "i";  // Instant event;
-  result["ts"] = std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count();
-  result["pid"] = pid;
+  std::string result = "{";
+  result += "\"name\": \"" + name + "\", ";
+  result += "\"ph\": \"i\", ";
+  result += "\"ts\": " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count()) + ", ";
+  result += "\"pid\": " + std::to_string(pid);
+  result += "}";
   return result;
 }
 
-Json::Value GenerateProcessMetaEvent(
+std::string GenerateProcessMetaEvent(
     std::string name, 
     int pid) {
-  Json::Value result;
-  result["name"] = "process_name";
-  result["ph"] = "M";  // Metadata event
-  result["pid"] = pid;
-  Json::Value args;
-  args["name"] = name;
-  result["args"] = args;
+  std::string result = "{";
+  result += "\"name\": \"process_name\", ";
+  result += "\"ph\": \"M\", ";
+  result += "\"pid\": " + std::to_string(pid) + ", ";
+  result += "\"args\": {";
+    result += "\"name\": \"" + name + "\"";
+  result += "}";
+  result += "}";
   return result;
 }
 
-Json::Value GenerateBeginEvent(
+std::string GenerateBeginEvent(
     std::string name,
     int pid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
-  Json::Value result;
-  result["name"] = name;
-  result["ph"] = "B";
-  result["ts"] = std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count();
-  result["pid"] = pid;
+  std::string result = "{";
+  result += "\"name\": \"" + name + "\", ";
+  result += "\"ph\": \"B\", ";
+  result += "\"ts\": " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count()) + ", ";
+  result += "\"pid\": " + std::to_string(pid);
+  result += "}";
   return result;
 }
 
-Json::Value GenerateEndEvent(
+std::string GenerateEndEvent(
     std::string name,
     int pid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
-  Json::Value result;
-  result["name"] = name;
-  result["ph"] = "E";
-  result["ts"] = std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count();
-  result["pid"] = pid;
+  std::string result = "{";
+  result += "\"name\": \"" + name + "\", ";
+  result += "\"ph\": \"E\", ";
+  result += "\"ts\": " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count()) + ", ";
+  result += "\"pid\": " + std::to_string(pid);
+  result += "}";
   return result;
 }
 
-std::pair<Json::Value, Json::Value> GenerateDurationEvent(
+std::pair<std::string, std::string> GenerateDurationEvent(
     std::string name,
     int pid,
     std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point> duration,
@@ -171,25 +175,25 @@ std::string ChromeTracer::Dump() const {
     i++;
   }
 
-  Json::Value result;
-  Json::Value trace_events;
+  std::string result = "{";
+  std::string trace_events = "[";
   // 1. Start event per stream
   for (auto const& stream : event_table_) {
     std::string stream_name = stream.first;
-    trace_events.append(
+    trace_events += 
         GenerateInstantEvent(
            "Start",
            stream_pid_map[stream_name],
-           anchor_, anchor_));
+           anchor_, anchor_) + ",";
   }
 
   // 2. Metadata event per stream
   for (auto const& stream : event_table_) {
     std::string stream_name = stream.first;
-    trace_events.append(
+    trace_events += 
         GenerateProcessMetaEvent(
             stream_name,
-            stream_pid_map[stream_name]));
+            stream_pid_map[stream_name]) + ",";
   }
 
   // 3. Duration event per events
@@ -200,14 +204,17 @@ std::string ChromeTracer::Dump() const {
           stream_pid_map[stream.first],
           std::make_pair(event.second.start, event.second.end),
           anchor_);
-      trace_events.append(dur_events.first);
-      trace_events.append(dur_events.second);
+      trace_events += dur_events.first + ",";
+      trace_events += dur_events.second + ",";
     }
   }
+  trace_events = trace_events.substr(0, trace_events.size() - 1) + "]";
 
-  result["traceEvents"] = trace_events;
+  result += "\"traceEvents\": " + trace_events;
+
+  result += "}";
   
-  return Json::FastWriter().write(result);
+  return result;
 }
 
 // Dump the json string to the file path.

@@ -8,8 +8,6 @@
 
 #include "chrome_tracer/event.h"
 
-#include <json/json.h>
-
 namespace chrome_tracer {
 
 class ChromeTracer {
