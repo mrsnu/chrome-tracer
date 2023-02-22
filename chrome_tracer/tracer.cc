@@ -1,4 +1,4 @@
-#include "chrome_tracer/tracer.h"
+#include "tracer.h"
 
 #include <iostream>
 #include <fstream>

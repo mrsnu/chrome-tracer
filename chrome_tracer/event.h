@@ -1,4 +1,5 @@
 #ifndef CHROME_TRACER_EVENT_H_
+#define CHROME_TRACER_EVENT_H_
 
 #include <iostream>
 #include <string>

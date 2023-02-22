@@ -1,4 +1,5 @@
 #ifndef CHROME_TRACER_TRACER_H_
+#define CHROME_TRACER_TRACER_H_
 
 #include <string>
 #include <map>
@@ -6,12 +7,13 @@
 #include <chrono>
 #include <mutex>
 
-#include "chrome_tracer/event.h"
+#include "event.h"
 
 namespace chrome_tracer {
 
 class ChromeTracer {
- public: 
+ public:
+  ChromeTracer() = default;
   ChromeTracer(std::string name);
 
   bool HasStream(std::string stream);
