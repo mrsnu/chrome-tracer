@@ -98,13 +98,15 @@ void ChromeTracer::AddStream(std::string stream) {
   }
 
   std::lock_guard<std::mutex> lock(lock_);
-  if (!event_table_.emplace(stream, std::map<std::string, Event>()).second) {
+  if (!event_table_.emplace(
+      stream, 
+      std::map<int32_t, Event>()).second) {
     std::cerr << "Failed to add a stream.";
     abort();
   }
 }
 
-bool ChromeTracer::HasEvent(std::string stream, std::string event) {
+bool ChromeTracer::HasEvent(std::string stream, int32_t handle) {
   if (!HasStream(stream)) {
     std::cerr << "The given stream does not exists." << std::endl;
     abort();
@@ -112,48 +114,35 @@ bool ChromeTracer::HasEvent(std::string stream, std::string event) {
 
   std::lock_guard<std::mutex> lock(lock_);
   auto& events = event_table_[stream];
-  if (events.find(event) == events.end()) {
+  if (events.find(handle) == events.end()) {
     return false;
   }
   return true;
 }
 
-std::string ChromeTracer::BeginEvent(std::string stream, std::string event, bool exist_ok) {
-  if (!exist_ok) {
-    if (HasEvent(stream, event)) {
-      std::cerr << "The given event already exists." << std::endl;
-      abort();
-    }
-  }
-
+int32_t ChromeTracer::BeginEvent(std::string stream, std::string name) {
   std::lock_guard<std::mutex> lock(lock_);
 
-  if (exist_ok) {
-    event += " (" + std::to_string(count_) + ")";
-    std::cerr << "Event name replaced into " + event + "."<< std::endl;
-  }
-  count_++;
-
   auto& events = event_table_[stream];
-  if (!events.emplace(event, Event(event)).second) {
+  if (!events.emplace(count_, Event(name)).second) {
     std::cerr << "Failed to start an event." << std::endl;
     abort();
   }
-  return event;
+  return count_++;
 }
 
-void ChromeTracer::EndEvent(std::string stream, std::string event, bool exist_ok) {
-  if (!HasEvent(stream, event)) {
-    std::cerr << "The given event (" + event + ") does not exists." << std::endl;
+void ChromeTracer::EndEvent(std::string stream, int32_t handle) {
+  if (!HasEvent(stream, handle)) {
+    std::cerr << "The given event does not exists." << std::endl;
     abort();
   }
 
   std::lock_guard<std::mutex> lock(lock_);
   auto events = event_table_.find(stream)->second;
-  auto new_event = events.find(event)->second;
+  auto new_event = events.find(handle)->second;
   new_event.Finish();
-  events.erase(event);
-  events.emplace(event, new_event);
+  events.erase(handle);
+  events.emplace(handle, new_event);
   event_table_[stream] = events;
 }
 
@@ -211,7 +200,7 @@ std::string ChromeTracer::Dump() const {
   for (auto const& stream : event_table_) {
     for (auto const& event : stream.second) {
       auto dur_events = GenerateDurationEvent(
-          event.first,
+          event.second.name,
           stream_pid_map[stream.first],
           std::make_pair(event.second.start, event.second.end),
           anchor_);
