@@ -10,12 +10,14 @@ namespace chrome_tracer {
 struct Event {
   enum class EventStatus {
     Running = 0,
-    Finished = 1
+    Finished = 1,
+    Instantanous = 2,
   };
 
-  Event(std::string name) : name(name) {
+  Event(std::string name, EventStatus status = EventStatus::Running) : 
+      name(name), 
+      status_(status) {
     start = std::chrono::system_clock::now();
-    status_ = EventStatus::Running;
   }
 
   void Finish() {

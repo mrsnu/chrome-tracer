@@ -120,6 +120,17 @@ bool ChromeTracer::HasEvent(std::string stream, int32_t handle) {
   return true;
 }
 
+void ChromeTracer::MarkEvent(std::string stream, std::string name) {
+  std::lock_guard<std::mutex> lock(lock_);
+  
+  auto& events = event_table_[stream];
+  if (!events.emplace(count_, Event(name, Event::EventStatus::Instantanous)).second) {
+    std::cerr << "Failed to start an event." << std::endl;
+    abort();
+  }
+  count_++;
+}
+
 int32_t ChromeTracer::BeginEvent(std::string stream, std::string name) {
   std::lock_guard<std::mutex> lock(lock_);
 
@@ -150,7 +161,7 @@ bool ChromeTracer::Validate() const {
   std::lock_guard<std::mutex> lock(lock_);
   for (auto const& stream : event_table_) {
     for (auto const& events : stream.second) {
-      if (events.second.GetStatus() != Event::EventStatus::Finished) {
+      if (events.second.GetStatus() == Event::EventStatus::Running) {
         std::cerr << stream.first << " " << events.second.name;
         return false;
       }
@@ -199,13 +210,29 @@ std::string ChromeTracer::Dump() const {
   // 3. Duration event per events
   for (auto const& stream : event_table_) {
     for (auto const& event : stream.second) {
-      auto dur_events = GenerateDurationEvent(
-          event.second.name,
-          stream_pid_map[stream.first],
-          std::make_pair(event.second.start, event.second.end),
-          anchor_);
-      trace_events += dur_events.first + ",";
-      trace_events += dur_events.second + ",";
+      switch (event.second.GetStatus()) {
+        case Event::EventStatus::Finished: {
+          auto dur_events = GenerateDurationEvent(
+              event.second.name,
+              stream_pid_map[stream.first],
+              std::make_pair(event.second.start, event.second.end),
+              anchor_);
+          trace_events += dur_events.first + ",";
+          trace_events += dur_events.second + ",";
+        } break;
+        case Event::EventStatus::Instantanous: {
+          auto inst_event = GenerateInstantEvent(
+              event.second.name,
+              stream_pid_map[stream.first],
+              event.second.start,
+              anchor_);
+          trace_events += inst_event + ",";
+        } break;
+        default: {
+          std::cerr << "Invalid event state.";
+          abort();
+        }
+      }
     }
   }
   trace_events = trace_events.substr(0, trace_events.size() - 1) + "]";
