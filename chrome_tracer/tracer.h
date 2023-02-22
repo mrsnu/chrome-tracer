@@ -20,8 +20,8 @@ class ChromeTracer {
   void AddStream(std::string stream);
 
   bool HasEvent(std::string stream, std::string event);
-  void BeginEvent(std::string stream, std::string event);
-  void EndEvent(std::string stream, std::string event);
+  std::string BeginEvent(std::string stream, std::string event, bool exist_ok = false);
+  void EndEvent(std::string stream, std::string event, bool exist_ok = false);
 
   bool Validate() const;
 
@@ -35,6 +35,8 @@ class ChromeTracer {
   std::string name_;
   std::map<std::string, std::map<std::string, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;
+  
+  size_t count_;
 
   mutable std::mutex lock_;
 };

@@ -81,6 +81,7 @@ std::pair<std::string, std::string> GenerateDurationEvent(
 ChromeTracer::ChromeTracer(std::string name) {
   this->name_ = name;
   anchor_ = std::chrono::system_clock::now();
+  count_ = 0;
 }
 
 bool ChromeTracer::HasStream(std::string stream) {
@@ -117,23 +118,33 @@ bool ChromeTracer::HasEvent(std::string stream, std::string event) {
   return true;
 }
 
-void ChromeTracer::BeginEvent(std::string stream, std::string event) {
-  if (HasEvent(stream, event)) {
-    std::cerr << "The given event already exists." << std::endl;
-    abort();
+std::string ChromeTracer::BeginEvent(std::string stream, std::string event, bool exist_ok) {
+  if (!exist_ok) {
+    if (HasEvent(stream, event)) {
+      std::cerr << "The given event already exists." << std::endl;
+      abort();
+    }
   }
 
   std::lock_guard<std::mutex> lock(lock_);
+
+  if (exist_ok) {
+    event += " (" + std::to_string(count_) + ")";
+    std::cerr << "Event name replaced into " + event + "."<< std::endl;
+  }
+  count_++;
+
   auto& events = event_table_[stream];
   if (!events.emplace(event, Event(event)).second) {
     std::cerr << "Failed to start an event." << std::endl;
     abort();
   }
+  return event;
 }
 
-void ChromeTracer::EndEvent(std::string stream, std::string event) {
+void ChromeTracer::EndEvent(std::string stream, std::string event, bool exist_ok) {
   if (!HasEvent(stream, event)) {
-    std::cerr << "The given event does not exists." << std::endl;
+    std::cerr << "The given event (" + event + ") does not exists." << std::endl;
     abort();
   }
 
