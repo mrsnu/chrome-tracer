@@ -14,6 +14,8 @@ struct Event {
     Instantanous = 2,
   };
 
+  Event() = delete;
+
   Event(std::string name, EventStatus status = EventStatus::Running) : 
       name(name), 
       status_(status) {

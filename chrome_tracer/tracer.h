@@ -26,13 +26,16 @@ class ChromeTracer {
 
   bool Validate() const;
 
-  std::string Dump() const;
-  void Dump(std::string path) const;
+  std::string Dump(bool force = false) const;
+  void Dump(std::string path, bool force = false) const;
   std::string Summary() const;
 
-  void Clear();
+  void Clear() {
+    event_table_.clear();
+    anchor_ = std::chrono::system_clock::now();
+  }
 
- private:
+ protected:
   std::string name_;
   std::map<std::string, std::map<int32_t, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;

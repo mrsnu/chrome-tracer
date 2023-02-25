@@ -171,8 +171,8 @@ bool ChromeTracer::Validate() const {
 }
 
 // Returns the json string.
-std::string ChromeTracer::Dump() const {
-  if (!Validate()) {
+std::string ChromeTracer::Dump(bool force) const {
+  if (!force && !Validate()) {
     std::cerr << "There is unfinished event." << std::endl;
     abort();
   }
@@ -228,6 +228,11 @@ std::string ChromeTracer::Dump() const {
               anchor_);
           trace_events += inst_event + ",";
         } break;
+        case Event::EventStatus::Running: {
+          if (force) {
+            break;
+          }
+        }
         default: {
           std::cerr << "Invalid event state.";
           abort();
@@ -245,26 +250,19 @@ std::string ChromeTracer::Dump() const {
 }
 
 // Dump the json string to the file path.
-void ChromeTracer::Dump(std::string path) const {
+void ChromeTracer::Dump(std::string path, bool force) const {
   std::ofstream fout;
   fout.open(path);
   if (fout.is_open() == false) {
     std::cerr << "Cannot open the file path." << std::endl;
     abort();
   }
-  fout << Dump();
+  fout << Dump(force);
   fout.close();
 }
 
 std::string ChromeTracer::Summary() const {
   return "";
-}
-
-void ChromeTracer::Clear() {
-  for (auto& stream : event_table_) {
-    stream.second.clear();
-  }
-  anchor_ = std::chrono::system_clock::now();
 }
 
 }  // namespace chrome_tracer
