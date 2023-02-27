@@ -20,8 +20,8 @@ class ChromeTracer {
   void AddStream(std::string stream);
 
   bool HasEvent(std::string stream, int32_t handle);
-  void MarkEvent(std::string stream, std::string event);
-  int32_t BeginEvent(std::string stream, std::string event);
+  void MarkEvent(std::string stream, std::string event_name, std::string metadata);
+  int32_t BeginEvent(std::string stream, std::string event_name, std::string metadata);
   void EndEvent(std::string stream, int32_t handle);
 
   bool Validate() const;

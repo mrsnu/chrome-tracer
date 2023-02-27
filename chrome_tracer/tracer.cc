@@ -36,44 +36,70 @@ std::string GenerateProcessMetaEvent(
   return result;
 }
 
-std::string GenerateBeginEvent(
+std::string GenerateThreadMetaEvent(
     std::string name,
     int pid,
+    int tid) {
+  std::string result = "{";
+  result += "\"name\": \"thread_name\", ";
+  result += "\"ph\": \"M\", ";
+  result += "\"pid\": " + std::to_string(pid) + ", ";
+  result += "\"tid\": " + std::to_string(tid) + ", ";
+  result += "\"args\": {";
+  result += "\"name\": \"" + name + "\"";
+  result += "}";
+  result += "}";
+  return result;
+}
+
+std::string GenerateBeginEvent(
+    std::string name,
+    std::string metadata,
+    int pid,
+    int tid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
+  std::string name_metadata = name + " (" + metadata + ")";
   std::string result = "{";
-  result += "\"name\": \"" + name + "\", ";
+  result += "\"name\": \"" + name_metadata + "\", ";
   result += "\"ph\": \"B\", ";
   result += "\"ts\": " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count()) + ", ";
-  result += "\"pid\": " + std::to_string(pid);
+  result += "\"pid\": " + std::to_string(pid) + ", ";
+  result += "\"tid\": " + std::to_string(tid);
   result += "}";
   return result;
 }
 
 std::string GenerateEndEvent(
     std::string name,
+    std::string metadata,
     int pid,
+    int tid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
+  std::string name_metadata = name + " (" + metadata + ")";
   std::string result = "{";
-  result += "\"name\": \"" + name + "\", ";
+  result += "\"name\": \"" + name_metadata + "\", ";
   result += "\"ph\": \"E\", ";
   result += "\"ts\": " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(timestamp - anchor).count()) + ", ";
-  result += "\"pid\": " + std::to_string(pid);
+  result += "\"pid\": " + std::to_string(pid) + ", ";
+  result += "\"tid\": " + std::to_string(tid);
   result += "}";
   return result;
 }
 
 std::pair<std::string, std::string> GenerateDurationEvent(
     std::string name,
+    std::string metadata,
     int pid,
+    int tid,
     std::pair<std::chrono::system_clock::time_point, std::chrono::system_clock::time_point> duration,
     std::chrono::system_clock::time_point anchor) {
   return std::make_pair(
       GenerateBeginEvent(
-          name, pid, duration.first, anchor), 
+          name, metadata, pid, tid, duration.first, anchor), 
       GenerateEndEvent(
-          name, pid, duration.second, anchor));
+          name, metadata, pid, tid, duration.second, anchor));
 }
 
 }  // anonymous namespace
@@ -120,29 +146,36 @@ bool ChromeTracer::HasEvent(std::string stream, int32_t handle) {
   return true;
 }
 
-void ChromeTracer::MarkEvent(std::string stream, std::string name) {
+void ChromeTracer::MarkEvent(
+    std::string stream,
+    std::string name,
+    std::string metadata) {
   std::lock_guard<std::mutex> lock(lock_);
-  
   auto& events = event_table_[stream];
-  if (!events.emplace(count_, Event(name, Event::EventStatus::Instantanous)).second) {
+  if (!events.emplace(count_, Event(name, metadata, std::chrono::system_clock::now(), Event::EventStatus::Instantanous)).second) {
     std::cerr << "Failed to start an event." << std::endl;
     abort();
   }
   count_++;
 }
 
-int32_t ChromeTracer::BeginEvent(std::string stream, std::string name) {
+int32_t ChromeTracer::BeginEvent(
+    std::string stream,
+    std::string event_name,
+    std::string metadata) {
   std::lock_guard<std::mutex> lock(lock_);
 
   auto& events = event_table_[stream];
-  if (!events.emplace(count_, Event(name)).second) {
+  if (!events.emplace(count_, Event(event_name, metadata, std::chrono::system_clock::now())).second) {
     std::cerr << "Failed to start an event." << std::endl;
     abort();
   }
   return count_++;
 }
 
-void ChromeTracer::EndEvent(std::string stream, int32_t handle) {
+void ChromeTracer::EndEvent(
+    std::string stream,
+    int32_t handle) {
   if (!HasEvent(stream, handle)) {
     std::cerr << "The given event does not exists." << std::endl;
     abort();
@@ -154,7 +187,9 @@ void ChromeTracer::EndEvent(std::string stream, int32_t handle) {
   new_event.Finish();
   events.erase(handle);
   events.emplace(handle, new_event);
-  event_table_[stream] = events;
+  event_table_.erase(stream);
+  event_table_.emplace(stream, events);
+  // event_table_[stream] = events;
 }
 
 bool ChromeTracer::Validate() const {
@@ -180,10 +215,19 @@ std::string ChromeTracer::Dump(bool force) const {
   std::lock_guard<std::mutex> lock(lock_);
 
   std::map<std::string, int> stream_pid_map;
-  int i = 1;
-  for (auto stream_name : event_table_) {
-    stream_pid_map[stream_name.first] = i;
-    i++;
+  std::map<std::string, int> event_tid_map;
+  int pid = 1;
+  int tid = 0;
+  for (auto stream : event_table_) {
+    stream_pid_map[stream.first] = pid;
+    pid++;
+    for (auto const& it : stream.second) {
+      auto const& event = it.second;
+      if (event_tid_map.find(event.name) == event_tid_map.end()) {
+        event_tid_map[event.name] = tid;
+        tid++;        
+      }
+    }
   }
 
   std::string result = "{";
@@ -198,13 +242,20 @@ std::string ChromeTracer::Dump(bool force) const {
            anchor_, anchor_) + ",";
   }
 
-  // 2. Metadata event per stream
+  // 2. Metadata event per process and per thread
   for (auto const& stream : event_table_) {
     std::string stream_name = stream.first;
     trace_events += 
         GenerateProcessMetaEvent(
             stream_name,
             stream_pid_map[stream_name]) + ",";
+    for (auto const& event : stream.second) {
+      trace_events +=
+          GenerateThreadMetaEvent(
+              event.second.name,
+              stream_pid_map[stream_name],
+              event_tid_map[event.second.name]) + ",";
+    }
   }
 
   // 3. Duration event per events
@@ -214,7 +265,9 @@ std::string ChromeTracer::Dump(bool force) const {
         case Event::EventStatus::Finished: {
           auto dur_events = GenerateDurationEvent(
               event.second.name,
+              event.second.metadata,
               stream_pid_map[stream.first],
+              event_tid_map[event.second.name],
               std::make_pair(event.second.start, event.second.end),
               anchor_);
           trace_events += dur_events.first + ",";
