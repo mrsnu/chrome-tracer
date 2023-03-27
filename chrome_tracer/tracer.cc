@@ -234,7 +234,8 @@ std::string ChromeTracer::Dump() const {
       case Event::EventStatus::Finished: {
         auto dur_events = GenerateDurationEvent(
             event.second.name, pid_, stream_tid_map[stream.first],
-            std::make_pair(event.second.start, event.second.end), anchor_);
+            std::make_pair(event.second.start, event.second.end), anchor_,
+            event.second.args);
         trace_events += dur_events.first + ",";
         trace_events += dur_events.second + ",";
       } break;
