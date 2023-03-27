@@ -19,20 +19,20 @@ static const char* kEventRendering5 = "EventRendering5";
 
 int main() {
   chrome_tracer::ChromeTracer tracer("test_tracer");
-  
+
   tracer.AddStream(kAnalysisPipeline);
   tracer.AddStream(kRenderingPipeline);
-  
-  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis1);
-  tracer.EndEvent(kAnalysisPipeline, kEventAnalysis1);
-  tracer.BeginEvent(kRenderingPipeline, kEventAnalysis2);
-  tracer.EndEvent(kRenderingPipeline, kEventAnalysis2);
-  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis3);
-  tracer.EndEvent(kAnalysisPipeline, kEventAnalysis3);
-  tracer.BeginEvent(kRenderingPipeline, kEventAnalysis4);
-  tracer.EndEvent(kRenderingPipeline, kEventAnalysis4);
-  tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis5);
-  tracer.EndEvent(kAnalysisPipeline, kEventAnalysis5);
+
+  int32_t handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis1);
+  tracer.EndEvent(kAnalysisPipeline, handle);
+  handle = tracer.BeginEvent(kRenderingPipeline, kEventAnalysis2);
+  tracer.EndEvent(kRenderingPipeline, handle);
+  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis3);
+  tracer.EndEvent(kAnalysisPipeline, handle);
+  handle = tracer.BeginEvent(kRenderingPipeline, kEventAnalysis4);
+  tracer.EndEvent(kRenderingPipeline, handle);
+  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis5);
+  tracer.EndEvent(kAnalysisPipeline, handle);
 
   if (tracer.Validate()) {
     printf("Validated!\n");

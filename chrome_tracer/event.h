@@ -1,9 +1,9 @@
 #ifndef CHROME_TRACER_EVENT_H_
 #define CHROME_TRACER_EVENT_H_
 
+#include <chrono>
 #include <iostream>
 #include <string>
-#include <chrono>
 
 namespace chrome_tracer {
 
@@ -14,9 +14,8 @@ struct Event {
     Instantanous = 2,
   };
 
-  Event(std::string name, EventStatus status = EventStatus::Running) : 
-      name(name), 
-      status_(status) {
+  Event(std::string name, EventStatus status = EventStatus::Running)
+      : name(name), status_(status) {
     start = std::chrono::system_clock::now();
   }
 
@@ -29,18 +28,17 @@ struct Event {
     status_ = EventStatus::Finished;
   }
 
-  EventStatus GetStatus() const {
-    return status_;
-  }
+  EventStatus GetStatus() const { return status_; }
 
   std::chrono::system_clock::time_point start;
   std::chrono::system_clock::time_point end;
   std::string name;
+  std::string args;
 
  private:
   EventStatus status_;
 };
 
-}  // namepsace chrome_tracer
+}  // namespace chrome_tracer
 
 #endif  // CHROME_TRACER_EVENT_H_
