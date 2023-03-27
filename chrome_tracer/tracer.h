@@ -12,7 +12,7 @@
 namespace chrome_tracer {
 
 class ChromeTracer {
-public:
+ public:
   ChromeTracer();
   ChromeTracer(std::string name);
 
@@ -32,7 +32,7 @@ public:
 
   void Clear();
 
-private:
+ private:
   static size_t GetNextPId();
   std::string name_;
   std::map<std::string, std::map<int32_t, Event>> event_table_;
@@ -44,6 +44,6 @@ private:
   mutable std::mutex lock_;
 };
 
-} // namespace chrome_tracer
+}  // namespace chrome_tracer
 
-#endif // CHROME_TRACER_TRACER_H_
+#endif  // CHROME_TRACER_TRACER_H_

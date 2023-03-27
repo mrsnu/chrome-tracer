@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-
 namespace chrome_tracer {
 
 struct Event {
@@ -36,10 +35,10 @@ struct Event {
   std::string name;
   std::string args;
 
-private:
+ private:
   EventStatus status_;
 };
 
-} // namespace chrome_tracer
+}  // namespace chrome_tracer
 
-#endif // CHROME_TRACER_EVENT_H_
+#endif  // CHROME_TRACER_EVENT_H_
