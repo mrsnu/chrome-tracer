@@ -7,15 +7,9 @@ static const char* kRenderingPipeline = "RenderingPipeline";
 
 static const char* kEventAnalysis1 = "EventAnalysis1";
 static const char* kEventAnalysis2 = "EventAnalysis2";
-static const char* kEventAnalysis3 = "EventAnalysis3";
-static const char* kEventAnalysis4 = "EventAnalysis4";
-static const char* kEventAnalysis5 = "EventAnalysis5";
 
 static const char* kEventRendering1 = "EventRendering1";
 static const char* kEventRendering2 = "EventRendering2";
-static const char* kEventRendering3 = "EventRendering3";
-static const char* kEventRendering4 = "EventRendering4";
-static const char* kEventRendering5 = "EventRendering5";
 
 int main() {
   chrome_tracer::ChromeTracer tracer("test_tracer");
@@ -25,13 +19,13 @@ int main() {
 
   int32_t handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis1);
   tracer.EndEvent(kAnalysisPipeline, handle);
-  handle = tracer.BeginEvent(kRenderingPipeline, kEventAnalysis2);
+  handle = tracer.BeginEvent(kRenderingPipeline, kEventRendering1);
   tracer.EndEvent(kRenderingPipeline, handle);
-  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis3);
+  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis2);
   tracer.EndEvent(kAnalysisPipeline, handle);
-  handle = tracer.BeginEvent(kRenderingPipeline, kEventAnalysis4);
+  handle = tracer.BeginEvent(kRenderingPipeline, kEventRendering2);
   tracer.EndEvent(kRenderingPipeline, handle);
-  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis5);
+  handle = tracer.BeginEvent(kAnalysisPipeline, kEventAnalysis2);
   tracer.EndEvent(kAnalysisPipeline, handle);
 
   if (tracer.Validate()) {
