@@ -1,20 +1,14 @@
-#ifndef CHROME_TRACER_TRACER_H_
-#define CHROME_TRACER_TRACER_H_
-
-#include <chrono>
-#include <map>
-#include <mutex>
-#include <string>
-#include <vector>
+#ifndef CHROME_TRACER_STREAM_TRACER_H_
+#define CHROME_TRACER_STREAM_TRACER_H_
 
 #include "chrome_tracer/tracer_interface.h"
 
 namespace chrome_tracer {
 
-class ChromeTracer : public ITracer {
+class ChromeStreamTracer : public ITracer {
  public:
-  ChromeTracer();
-  ChromeTracer(std::string name);
+  ChromeStreamTracer();
+  ChromeStreamTracer(std::string name);
 
   bool HasStream(std::string stream);
   void AddStream(std::string stream);
@@ -33,17 +27,11 @@ class ChromeTracer : public ITracer {
   void Clear();
 
  private:
-  static size_t GetNextPid();
   std::string name_;
-  std::map<std::string, std::map<int32_t, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;
-
-  size_t count_;
-  const size_t pid_;
-
   mutable std::mutex lock_;
 };
 
 }  // namespace chrome_tracer
 
-#endif  // CHROME_TRACER_TRACER_H_
+#endif  // CHROME_TRACER_STREAM_TRACER_H_

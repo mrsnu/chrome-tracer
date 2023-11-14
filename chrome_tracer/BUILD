@@ -24,14 +24,27 @@ config_setting(
 )
 
 cc_library(
+    name = "utils",
+    hdrs = [
+        "utils.h",
+    ],
+)
+
+cc_library(
     name = "chrome_tracer",
     hdrs = [
+        "tracer_interface.h",
         "tracer.h",
+        "stream_tracer.h"
         "event.h",
     ],
     srcs = [
         "tracer.cc",
+        "stream_tracer.cc",
     ],
+    deps = [
+        ":utils",
+    ]
     visibility = ["//visibility:public"],
 )
 
