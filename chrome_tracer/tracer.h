@@ -16,7 +16,7 @@ class ChromeTracer : public ITracer {
   ChromeTracer();
   ChromeTracer(std::string name);
 
-  bool HasStream(std::string stream);
+  bool HasStream(std::string stream) const;
   void AddStream(std::string stream);
 
   bool HasEvent(std::string stream, int32_t handle);
@@ -33,7 +33,7 @@ class ChromeTracer : public ITracer {
   void Clear();
 
  private:
-  static size_t GetNextPid();
+  
   std::string name_;
   std::map<std::string, std::map<int32_t, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;

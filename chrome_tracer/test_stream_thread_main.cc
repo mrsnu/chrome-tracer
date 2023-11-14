@@ -2,20 +2,20 @@
 #include <thread>
 #include <vector>
 
-#include "chrome_tracer/tracer.h"
+#include "chrome_tracer/stream_tracer.h"
 
 std::map<std::string, int32_t> handles;
 
-void BeginEvent(chrome_tracer::ChromeTracer& tracer, std::string event_name) {
+void BeginEvent(chrome_tracer::ChromeStreamTracer& tracer, std::string event_name) {
   handles[event_name] = tracer.BeginEvent("DefaultStream", event_name);
 }
 
-void EndEvent(chrome_tracer::ChromeTracer& tracer, std::string event_name) {
+void EndEvent(chrome_tracer::ChromeStreamTracer& tracer, std::string event_name) {
   tracer.EndEvent("DefaultStream", handles[event_name]);
 }
 
 int main() {
-  chrome_tracer::ChromeTracer tracer("TestThread");
+  chrome_tracer::ChromeStreamTracer tracer("test.json");
   std::vector<std::thread> start_threads;
   std::vector<std::thread> end_threads;
 
@@ -41,8 +41,6 @@ int main() {
     end_threads[i].join();
     std::cout << "Thread " << i << " joined" << std::endl;
   }
-
-  tracer.Dump("test.json");
 
   return 0;
 }

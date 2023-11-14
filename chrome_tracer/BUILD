@@ -35,7 +35,7 @@ cc_library(
     hdrs = [
         "tracer_interface.h",
         "tracer.h",
-        "stream_tracer.h"
+        "stream_tracer.h",
         "event.h",
     ],
     srcs = [
@@ -44,7 +44,7 @@ cc_library(
     ],
     deps = [
         ":utils",
-    ]
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -59,9 +59,33 @@ cc_binary(
 )
 
 cc_binary(
+    name = "test_stream_main",
+    srcs = [
+        "test_stream_main.cc",
+    ],
+    deps = [
+        ":chrome_tracer",
+    ],
+)
+
+cc_binary(
     name = "test_thread_main",
     srcs = [
         "test_thread_main.cc",
+    ],
+    linkopts = select({
+        "//chrome_tracer:linux": ["-lpthread"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":chrome_tracer",
+    ],
+)
+
+cc_binary(
+    name = "test_stream_thread_main",
+    srcs = [
+        "test_stream_thread_main.cc",
     ],
     linkopts = select({
         "//chrome_tracer:linux": ["-lpthread"],

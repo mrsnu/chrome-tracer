@@ -15,7 +15,7 @@ ChromeTracer::ChromeTracer(std::string name) : ChromeTracer() {
   this->name_ = name;
 }
 
-bool ChromeTracer::HasStream(std::string stream) {
+bool ChromeTracer::HasStream(std::string stream) const {
   std::lock_guard<std::mutex> lock(lock_);
   if (event_table_.find(stream) == event_table_.end()) {
     return false;
@@ -53,7 +53,7 @@ void ChromeTracer::MarkEvent(std::string stream, std::string name) {
   std::lock_guard<std::mutex> lock(lock_);
 
   auto& events = event_table_[stream];
-  if (!events.emplace(count_, Event(name, Event::EventStatus::Instantanous))
+  if (!events.emplace(count_, Event(name, Event::EventStatus::Instantaneous))
            .second) {
     std::cerr << "Failed to start an event." << std::endl;
     abort();
@@ -151,7 +151,7 @@ std::string ChromeTracer::Dump() const {
           trace_events += dur_events.first + ",";
           trace_events += dur_events.second + ",";
         } break;
-        case Event::EventStatus::Instantanous: {
+        case Event::EventStatus::Instantaneous: {
           auto inst_event = GenerateInstantEvent(event.second.name, pid_,
                                                  stream_tid_map[stream.first],
                                                  event.second.start, anchor_);
@@ -192,11 +192,6 @@ void ChromeTracer::Clear() {
     stream.second.clear();
   }
   anchor_ = std::chrono::system_clock::now();
-}
-
-size_t ChromeTracer::GetNextPid() {
-  static size_t pid = 0;
-  return pid++;
 }
 
 }  // namespace chrome_tracer

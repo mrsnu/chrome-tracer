@@ -11,7 +11,7 @@ struct Event {
   enum class EventStatus {
     Running = 0,
     Finished = 1,
-    Instantanous = 2,
+    Instantaneous = 2,
   };
 
   Event(std::string name, EventStatus status = EventStatus::Running)
