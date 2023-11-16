@@ -26,6 +26,7 @@ ChromeStreamTracer::~ChromeStreamTracer() {
   file_.seekp(-1, std::ios_base::end);
   file_ << "]";
   file_ << "}";
+  file_.close();
 }
 
 bool ChromeStreamTracer::HasStream(std::string stream) const {
