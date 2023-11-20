@@ -6,7 +6,7 @@
 
 namespace chrome_tracer {
 
-std::string GenerateInstantEvent(
+inline std::string GenerateInstantEvent(
     std::string name, int pid, int tid,
     std::chrono::system_clock::time_point timestamp,
     std::chrono::system_clock::time_point anchor) {
@@ -25,7 +25,7 @@ std::string GenerateInstantEvent(
   return result;
 }
 
-std::string GenerateProcessMetaEvent(std::string name, std::string meta_name,
+inline std::string GenerateProcessMetaEvent(std::string name, std::string meta_name,
                                      int pid, int tid) {
   std::string result = "{";
   result += "\"name\": \"" + meta_name + "\", ";
@@ -39,7 +39,7 @@ std::string GenerateProcessMetaEvent(std::string name, std::string meta_name,
   return result;
 }
 
-std::string GenerateBeginEvent(std::string name, int pid, int tid,
+inline std::string GenerateBeginEvent(std::string name, int pid, int tid,
                                std::chrono::system_clock::time_point timestamp,
                                std::chrono::system_clock::time_point anchor) {
   std::string result = "{";
@@ -57,7 +57,7 @@ std::string GenerateBeginEvent(std::string name, int pid, int tid,
   return result;
 }
 
-std::string GenerateEndEvent(std::string name, int pid, int tid,
+inline std::string GenerateEndEvent(std::string name, int pid, int tid,
                              std::chrono::system_clock::time_point timestamp,
                              std::chrono::system_clock::time_point anchor,
                              std::string args) {
@@ -79,7 +79,7 @@ std::string GenerateEndEvent(std::string name, int pid, int tid,
   return result;
 }
 
-std::pair<std::string, std::string> GenerateDurationEvent(
+inline std::pair<std::string, std::string> GenerateDurationEvent(
     std::string name, int pid, int tid,
     std::pair<std::chrono::system_clock::time_point,
               std::chrono::system_clock::time_point>
