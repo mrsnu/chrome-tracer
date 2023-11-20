@@ -1,3 +1,6 @@
+#ifndef CHROME_TRACER_UTIL_H_
+#define CHROME_TRACER_UTIL_H_
+
 #include <chrono>
 #include <string>
 
@@ -88,3 +91,5 @@ std::pair<std::string, std::string> GenerateDurationEvent(
 }
 
 }  // namespace chrome_tracer
+
+#endif  // CHROME_TRACER_UTIL_H_
