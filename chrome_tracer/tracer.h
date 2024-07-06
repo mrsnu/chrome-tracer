@@ -33,7 +33,7 @@ class ChromeTracer {
   void Clear();
 
  private:
-  static size_t GetNextPId();
+  static size_t GetNextPid();
   std::string name_;
   std::map<std::string, std::map<int32_t, Event>> event_table_;
   std::chrono::system_clock::time_point anchor_;
