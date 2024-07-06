@@ -97,7 +97,7 @@ std::pair<std::string, std::string> GenerateDurationEvent(
 ChromeTracer::ChromeTracer()
     : anchor_(std::chrono::system_clock::now()),
       count_(0),
-      pid_(GetNextPId()) {}
+      pid_(GetNextPid()) {}
 
 ChromeTracer::ChromeTracer(std::string name) : ChromeTracer() {
   this->name_ = name;
@@ -282,7 +282,7 @@ void ChromeTracer::Clear() {
   anchor_ = std::chrono::system_clock::now();
 }
 
-size_t ChromeTracer::GetNextPId() {
+size_t ChromeTracer::GetNextPid() {
   static size_t pid = 0;
   return pid++;
 }
